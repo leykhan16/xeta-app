@@ -22,7 +22,10 @@
         "backgroundColor": "#0a0a0a"
       },
       "package": "com.leykhan16.xeta",
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -30,6 +33,12 @@
     "plugins": [
       "expo-secure-store",
       "expo-image-picker"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "e8996086-9ee6-433e-91fd-296af1027b3b"
+      }
+    },
+    "owner": "leykhan"
   }
 }
