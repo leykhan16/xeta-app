@@ -3,6 +3,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as SecureStore from 'expo-secure-store';
 import { getMe } from '../services/api';
+import * as Notifications from 'expo-notifications';
+import { Platform } from 'react-native';
 
 import RegisterScreen from '../screens/RegisterScreen';
 import LoginScreen from '../screens/LoginScreen';
@@ -29,6 +31,33 @@ export default function AppNavigator() {
     setLoading(false);
   };
 
+  const registerPushToken = async () => {
+    try {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== 'granted') return;
+
+      const tokenData = await Notifications.getExpoPushTokenAsync({
+        projectId: 'e8996086-9ee6-433e-91fd-296af1027b3b',
+      });
+
+      const pushToken = tokenData.data;
+      await SecureStore.setItemAsync('xeta_push_token', pushToken);
+
+      // Save to backend
+      const authToken = await SecureStore.getItemAsync('xeta_token');
+      await fetch('https://xeta-backend.onrender.com/push-token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({ token: pushToken }),
+      });
+    } catch (e) {
+      console.log('Push token error:', e.message);
+    }
+  };
+
   const login = async (token, username) => {
     await SecureStore.setItemAsync('xeta_token', token);
     await SecureStore.setItemAsync('xeta_username', username);
@@ -37,6 +66,7 @@ export default function AppNavigator() {
       await SecureStore.setItemAsync('xeta_user_id', me.id);
     } catch {}
     setIsLoggedIn(true);
+    registerPushToken();
   };
 
   const logout = async () => {
